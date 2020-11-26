@@ -10,22 +10,24 @@ type state struct {
 	flock     *tl.Entity
 	tickSpeed float64
 }
+
 // The player Implements Tick for handling user input
 // can pan around the world view by holding middle mouse
 // can left click to set a location for goblins to flock to
 // can right click to dismiss flock command
 type player struct {
 	*tl.Entity
-	panX int
-	panY int
-	game *state
+	panX    int
+	panY    int
+	game    *state
 	panning bool
-	level *tl.BaseLevel
+	level   *tl.BaseLevel
 }
+
 func (c *player) Tick(event tl.Event) {
 	if event.Type == tl.EventMouse { // Is it a mouse event?
 		x, y := event.MouseX, event.MouseY
-		offsetX, offsetY :=c.level.Offset()
+		offsetX, offsetY := c.level.Offset()
 		if c.panning {
 			offsetX -= x - c.panX
 			offsetY -= y - c.panY
@@ -38,12 +40,12 @@ func (c *player) Tick(event tl.Event) {
 			c.panning = true
 			c.panX, c.panY = x, y
 		case tl.MouseRelease:
-			c.panning =false
+			c.panning = false
 			c.panX, c.panY = 0, 0
 		case tl.MouseLeft:
 			c.level.RemoveEntity(c.game.flock)
-			c.game.flock = tl.NewEntity(x-offsetX,y-offsetY,1,1)
-			c.game.flock.SetCell(0,0, &tl.Cell{Bg: tl.ColorWhite, Fg: tl.ColorRed, Ch:'!'})
+			c.game.flock = tl.NewEntity(x-offsetX, y-offsetY, 1, 1)
+			c.game.flock.SetCell(0, 0, &tl.Cell{Bg: tl.ColorWhite, Fg: tl.ColorRed, Ch: '!'})
 			c.level.AddEntity(c.game.flock)
 		case tl.MouseRight:
 			c.level.RemoveEntity(c.game.flock)
@@ -51,11 +53,14 @@ func (c *player) Tick(event tl.Event) {
 		}
 	}
 }
+
 // directionality
 type direction int
+
 var (
 	gopherColor = tl.ColorCyan
 )
+
 const (
 	UP direction = iota
 	DOWN
@@ -66,20 +71,22 @@ const (
 // common attributes
 type attributes struct {
 	health int
-	dmg int
-	mspd int
-	aspd int
-	fly bool
+	dmg    int
+	mspd   int
+	aspd   int
+	fly    bool
 }
+
 // Our character, apply logic in the Draw function
 type gopher struct {
 	*tl.Entity
-	game *state
-	interval float64
-	facing direction
+	game         *state
+	interval     float64
+	facing       direction
 	prevX, prevY int
 	attributes
 }
+
 func (g *gopher) Draw(screen *tl.Screen) {
 	g.interval += screen.TimeDelta()
 	if g.interval > g.game.tickSpeed {
@@ -103,7 +110,7 @@ func (g *gopher) Draw(screen *tl.Screen) {
 			gopherRight(g, tl.Cell{Bg: gopherColor})
 			g.SetPosition(g.prevX+g.attributes.mspd, g.prevY)
 		case LEFT:
-			gopherLeft(g,tl.Cell{Bg: gopherColor})
+			gopherLeft(g, tl.Cell{Bg: gopherColor})
 			g.SetPosition(g.prevX-g.attributes.mspd, g.prevY)
 		case UP:
 			gopherDown(g, tl.Cell{Bg: gopherColor})
@@ -116,7 +123,6 @@ func (g *gopher) Draw(screen *tl.Screen) {
 	}
 	g.Entity.Draw(screen)
 }
-
 
 func (g *gopher) Collide(collision tl.Physical) {
 	// Check if it's a Rectangle we're colliding with
@@ -131,14 +137,14 @@ func gopherLeft(g *gopher, cell tl.Cell) {
 	canvas := tl.NewCanvas(2, 2)
 	canvas[1][0] = cell
 	canvas[1][1] = cell
-	canvas[0][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'o'}
+	canvas[0][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: 'o'}
 	g.SetCanvas(&canvas)
 }
 
 func gopherRight(g *gopher, cell tl.Cell) {
 	canvas := tl.NewCanvas(2, 2)
 	canvas[0][0] = cell
-	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'o'}
+	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: 'o'}
 	canvas[0][1] = cell
 	g.SetCanvas(&canvas)
 }
@@ -146,7 +152,7 @@ func gopherRight(g *gopher, cell tl.Cell) {
 func gopherUp(g *gopher, cell tl.Cell) {
 	canvas := tl.NewCanvas(3, 2)
 	canvas[0][0] = cell
-	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'#'}
+	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: '#'}
 	canvas[2][0] = cell
 	canvas[1][1] = cell
 	g.SetCanvas(&canvas)
@@ -154,9 +160,9 @@ func gopherUp(g *gopher, cell tl.Cell) {
 
 func gopherDown(g *gopher, cell tl.Cell) {
 	canvas := tl.NewCanvas(3, 2)
-	canvas[0][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'o'}
-	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorBlack, Ch:'_'}
-	canvas[2][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'o'}
+	canvas[0][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: 'o'}
+	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorBlack, Ch: '_'}
+	canvas[2][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: 'o'}
 	canvas[1][1] = cell
 	g.SetCanvas(&canvas)
 }
@@ -164,43 +170,41 @@ func gopherDown(g *gopher, cell tl.Cell) {
 func newGopher(x, y int, state *state, cell tl.Cell) *gopher {
 	canvas := tl.NewCanvas(2, 2)
 	canvas[0][0] = cell
-	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch:'o'}
+	canvas[1][0] = tl.Cell{Bg: gopherColor, Fg: tl.ColorWhite, Ch: 'o'}
 	canvas[0][1] = cell
 	return &gopher{
-		Entity: tl.NewEntityFromCanvas(x,y, canvas),
-		game: state,
+		Entity: tl.NewEntityFromCanvas(x, y, canvas),
+		game:   state,
 		attributes: attributes{
 			health: 40,
 			dmg:    5,
-			mspd:    1,
-			aspd: 1, // attacks per second
+			mspd:   1,
+			aspd:   1, // attacks per second
 		},
 	}
 }
-
-
 
 func main() {
 	game := tl.NewGame()
 	game.Screen().SetFps(60)
 	level := tl.NewBaseLevel(tl.Cell{
-			Bg: tl.ColorGreen,
-			Fg: tl.ColorBlack,
-		})
+		Bg: tl.ColorGreen,
+		Fg: tl.ColorBlack,
+	})
 	state := &state{tickSpeed: .8}
 	camera := &player{
-		Entity: tl.NewEntity(1,1,0,0),
-		game: state,
-		level: level,
+		Entity: tl.NewEntity(1, 1, 0, 0),
+		game:   state,
+		level:  level,
 	}
 	level.AddEntity(tl.NewRectangle(10, 10, 50, 20, tl.ColorBlue))
 	level.AddEntity(camera)
-	goblin := newGopher(4,4, state, tl.Cell{Bg: gopherColor})
-	goblin2 := newGopher(4, 8,state, tl.Cell{Bg: gopherColor})
-	goblin3 := newGopher(4, 12,state, tl.Cell{Bg: gopherColor})
-	level.AddEntity(goblin3)
-	level.AddEntity(goblin2)
-	level.AddEntity(goblin)
+	gopher := newGopher(4, 4, state, tl.Cell{Bg: gopherColor})
+	gopher2 := newGopher(4, 8, state, tl.Cell{Bg: gopherColor})
+	gopher3 := newGopher(4, 12, state, tl.Cell{Bg: gopherColor})
+	level.AddEntity(gopher3)
+	level.AddEntity(gopher2)
+	level.AddEntity(gopher)
 	game.Screen().SetLevel(level)
 	game.Start()
 }
